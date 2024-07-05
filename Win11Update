@@ -1,0 +1,61 @@
+@echo off
+echo Windows Update Control Script
+
+:START
+echo.
+echo Choose an option:
+echo 1. Disable Windows Update
+echo 2. Enable Windows Update
+echo 3. Check Windows Update Status
+echo 4. Exit
+
+set /p choice=Enter your choice (1-4): 
+
+if "%choice%"=="1" goto DISABLE_UPDATE
+if "%choice%"=="2" goto ENABLE_UPDATE
+if "%choice%"=="3" goto CHECK_UPDATE_STATUS
+if "%choice%"=="4" goto END
+
+echo Invalid choice. Please enter 1, 2, 3, or 4.
+goto START
+
+:DISABLE_UPDATE
+echo Stopping Windows Update service...
+net stop wuauserv
+net stop bits
+net stop dosvc
+
+echo Disabling Windows Update service...
+sc config wuauserv start= disabled
+sc config bits start= disabled
+sc config dosvc start= disabled
+
+echo Windows Update disabled successfully.
+goto END
+
+:ENABLE_UPDATE
+echo Enabling Windows Update service...
+sc config wuauserv start= auto
+sc config bits start= auto
+sc config dosvc start= auto
+
+echo Starting Windows Update service...
+net start wuauserv
+net start bits
+net start dosvc
+
+echo Windows Update enabled successfully.
+goto END
+
+:CHECK_UPDATE_STATUS
+echo Checking Windows Update service status...
+sc query wuauserv | find "STATE" | find "STOPPED" > nul
+if %errorlevel% equ 0 (
+    echo Windows Update service is currently stopped.
+) else (
+    echo Windows Update service is currently running.
+)
+goto END
+
+:END
+pause
